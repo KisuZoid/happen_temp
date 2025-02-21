@@ -1,5 +1,3 @@
-//User schema (With password reset & email verification)
-
 const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
 
@@ -7,10 +5,9 @@ const userSchema = new mongoose.Schema({
   name: { type: String, required: true },
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
-  role: { type: String, enum: ["admin", "organizer", "user"], default: "user" },
-  isVerified: { type: Boolean, default: false },
-  resetToken: { type: String },
-}, { timestamps: true });
+  role: { type: String, enum: ["admin", "organizer", "attendee"], default: "attendee" },
+  isVerified: { type: Boolean, default: false }
+});
 
 // Hash password before saving
 userSchema.pre("save", async function (next) {
@@ -19,10 +16,6 @@ userSchema.pre("save", async function (next) {
   next();
 });
 
-// Compare passwords
-userSchema.methods.comparePassword = async function (enteredPassword) {
-  return await bcrypt.compare(enteredPassword, this.password);
-};
-
 module.exports = mongoose.model("User", userSchema);
+
 

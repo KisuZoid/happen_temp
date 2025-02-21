@@ -1,26 +1,21 @@
 // JWT authentication & role-based access control
 const jwt = require("jsonwebtoken");
-const User = require("../models/userModel");
 
-exports.protect = async (req, res, next) => {
-    try {
-        let token = req.headers.authorization;
+const authenticateUser = (req, res, next) => {
+  const token = req.header("Authorization")?.split(" ")[1];
 
-        if (!token || !token.startsWith("Bearer ")) {
-            return res.status(401).json({ message: "Unauthorized, no token provided" });
-        }
+  if (!token) {
+    return res.status(401).json({ message: "Access Denied: No token provided" });
+  }
 
-        token = token.split(" ")[1];
-
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        req.user = await User.findById(decoded.id).select("-password"); // Attach user info to req
-
-        if (!req.user) {
-            return res.status(401).json({ message: "Unauthorized, invalid token" });
-        }
-
-        next();
-    } catch (error) {
-        res.status(401).json({ message: "Unauthorized, token failed" });
-    }
+  try {
+    const verified = jwt.verify(token, process.env.JWT_SECRET); 
+    req.user = verified;
+    next();
+  } catch (error) {
+    res.status(403).json({ message: "Invalid Token" });
+  }
 };
+
+module.exports = authenticateUser;
+

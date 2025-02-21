@@ -1,4 +1,3 @@
-//User profile & role management
 const User = require("../models/userModel");
 
 exports.getAllUsers = async (req, res) => {

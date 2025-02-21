@@ -1,4 +1,3 @@
-//Ticket management (Check-in, validation, generation)
 const Ticket = require("../models/ticketModel");
 
 exports.validateTicket = async (req, res) => {

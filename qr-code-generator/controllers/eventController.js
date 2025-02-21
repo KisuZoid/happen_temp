@@ -1,4 +1,3 @@
-//Handles event creation & management
 const Event = require("../models/eventModel");
 
 exports.createEvent = async (req, res) => {

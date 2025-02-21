@@ -1,11 +1,11 @@
-//Routes for QR & attendance system (Merged routes)
 const express = require("express");
-const { generateQR, scanQR } = require("../controllers/qrController");
-const { protect } = require("../middleware/authMiddleware");
+const { generateQR, validateQR } = require("../controllers/qrController");
+const authMiddleware = require("../middleware/authMiddleware");
+
 const router = express.Router();
 
-router.post("/generate", protect, generateQR); // Generate QR Code for event
-router.post("/scan", protect, scanQR); // Scan QR Code for attendance tracking
+router.post("/generate/:eventId", authMiddleware, generateQR);
+router.post("/validate", authMiddleware, validateQR);
 
 module.exports = router;
 
