@@ -1,25 +1,62 @@
-//QR scan and attendance marking
+//Handles attendance tracking and reports
 const Attendance = require("../models/attendanceModel");
+const Ticket = require("../models/ticketModel");
+const mongoose = require("mongoose");
 
-exports.scanQR = async (req, res) => {
+exports.markAttendance = async (req, res) => {
   try {
-    const { qrData } = req.body;
-    const [userId, eventId] = qrData.split("-");
+    const { userId, eventId } = req.body;
 
-    // Check if attendance already exists for this user & event
-    const existingAttendance = await Attendance.findOne({ userId, eventId });
-    if (existingAttendance) {
-      return res.status(400).json({ message: "Already marked present" });
+    if (!mongoose.Types.ObjectId.isValid(userId) || !mongoose.Types.ObjectId.isValid(eventId)) {
+      return res.status(400).json({ message: "Invalid userId or eventId" });
     }
 
-    // Mark attendance if not already marked
-    const newAttendance = new Attendance({ userId, eventId });
+    // Check if the user has a valid ticket
+    const ticket = await Ticket.findOne({ userId, eventId });
+    if (!ticket) return res.status(400).json({ message: "No valid ticket found for this event" });
+
+    // Check if attendance is already marked
+    const existingAttendance = await Attendance.findOne({ userId, eventId });
+    if (existingAttendance) return res.status(400).json({ message: "Attendance already marked" });
+
+    // Mark attendance
+    const newAttendance = new Attendance({ userId, eventId, timestamp: new Date() });
     await newAttendance.save();
 
-    res.json({ message: "Attendance marked successfully" });
+    res.status(200).json({ message: "Attendance marked successfully", attendance: newAttendance });
   } catch (error) {
-    res.status(500).json({ message: "Server Error", error });
+    res.status(500).json({ message: "Error marking attendance", error });
   }
 };
 
-  
+exports.getAttendanceByEvent = async (req, res) => {
+  try {
+    const { eventId } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(eventId)) {
+      return res.status(400).json({ message: "Invalid eventId" });
+    }
+
+    const attendanceRecords = await Attendance.find({ eventId }).populate("userId", "name email");
+    res.status(200).json({ attendance: attendanceRecords });
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching attendance records", error });
+  }
+};
+
+exports.getUserAttendance = async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return res.status(400).json({ message: "Invalid userId" });
+    }
+
+    const userAttendance = await Attendance.find({ userId }).populate("eventId", "name date location");
+    res.status(200).json({ attendance: userAttendance });
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching user attendance", error });
+  }
+};
+
+

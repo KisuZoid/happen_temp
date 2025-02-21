@@ -1,22 +1,13 @@
-//QR code generator
-const mongoose = require("mongoose");
+//QR Code generation, attendance tracking & validation
 const QRCode = require("qrcode");
 const Ticket = require("../models/ticketModel");
+const mongoose = require("mongoose");
 
 exports.generateQR = async (req, res) => {
   try {
     let { userId, eventId } = req.body;
-
-    // Validate ObjectId format
-    if (!mongoose.Types.ObjectId.isValid(userId)) {
-      return res.status(400).json({ message: "Invalid userId format" });
-    }
-    if (!mongoose.Types.ObjectId.isValid(eventId)) {
-      return res.status(400).json({ message: "Invalid eventId format" });
-    }
-
-    userId = new mongoose.Types.ObjectId(userId);
-    eventId = new mongoose.Types.ObjectId(eventId);
+    if (!mongoose.Types.ObjectId.isValid(userId) || !mongoose.Types.ObjectId.isValid(eventId))
+      return res.status(400).json({ message: "Invalid ID format" });
 
     const qrData = `${userId}-${eventId}`;
     const qrCode = await QRCode.toDataURL(qrData);
@@ -29,5 +20,3 @@ exports.generateQR = async (req, res) => {
     res.status(500).json({ message: "Server Error", error });
   }
 };
-
-

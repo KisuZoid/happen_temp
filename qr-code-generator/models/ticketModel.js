@@ -1,11 +1,13 @@
-//ticket
+//Ticket schema (Includes QR tracking info)
+
 const mongoose = require("mongoose");
 
-const TicketSchema = new mongoose.Schema({
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-  eventId: { type: mongoose.Schema.Types.ObjectId, ref: "Event" },
-  qrCode: String,
-  createdAt: { type: Date, default: Date.now }
-});
+const ticketSchema = new mongoose.Schema({
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+  eventId: { type: mongoose.Schema.Types.ObjectId, ref: "Event", required: true },
+  qrCode: { type: String, required: true },
+  scanned: { type: Boolean, default: false },
+}, { timestamps: true });
 
-module.exports = mongoose.model("Ticket", TicketSchema);
+module.exports = mongoose.model("Ticket", ticketSchema);
+
