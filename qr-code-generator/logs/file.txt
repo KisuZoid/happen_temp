@@ -1,1 +1,0 @@
-Stores log files for debugging
